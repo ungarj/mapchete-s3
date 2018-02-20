@@ -1,0 +1,16 @@
+# mandatory parameters
+######################
+process_file: example_process.py
+input:
+    file: dummy1.tif
+output:
+    format: s3
+    profile:
+        driver: GTiff
+        bands: 3
+        dtype: uint16
+    basekey: _test/mapchete_s3
+    bucket: test-gtiff
+pyramid:
+    grid: geodetic
+zoom_levels: 5

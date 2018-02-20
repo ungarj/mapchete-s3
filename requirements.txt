@@ -1,0 +1,2 @@
+mapchete>=0.20
+rasterio[s3]>=1.0a12
