@@ -43,10 +43,7 @@ class OutputData(base.OutputData):
                 "other drivers thatn GTiff not yet supported")
         self.file_extension = ".tif"
         self.nodata = output_params["profile"].get("nodata", 0)
-        self.s3 = boto3.resource('s3')
-        self.s3_client = boto3.client('s3')
-        self.s3_client.get_bucket_policy(Bucket=output_params["bucket"])
-        self.bucket = self.s3.Bucket(output_params["bucket"])
+        self.bucket = output_params["bucket"]
 
     def read(self, output_tile):
         """
@@ -93,6 +90,7 @@ class OutputData(base.OutputData):
         if data.mask.all():
             logger.debug((process_tile.id, "empty data"))
             return
+        bucket = boto3.resource('s3').Bucket(self.bucket)
         for tile in self.pyramid.intersecting(process_tile):
             logger.debug((tile.id, "prepare to upload", self.get_path(tile)))
             out_tile = BufferedTile(tile, self.pixelbuffer)
@@ -102,8 +100,7 @@ class OutputData(base.OutputData):
                 tags=tags
             ) as memfile:
                 logger.debug((tile.id, "upload tiles"))
-                self.bucket.put_object(
-                    Key=self.get_bucket_key(tile), Body=memfile)
+                bucket.put_object(Key=self.get_bucket_key(tile), Body=memfile)
 
     def tiles_exist(self, process_tile):
         """
@@ -118,11 +115,12 @@ class OutputData(base.OutputData):
         -------
         exists : bool
         """
+        bucket = boto3.resource('s3').Bucket(self.bucket)
         for key in [
             self.get_bucket_key(tile)
             for tile in self.pyramid.intersecting(process_tile)
         ]:
-            objs = list(self.bucket.objects.filter(Prefix=key))
+            objs = list(bucket.objects.filter(Prefix=key))
             if len(objs) > 0 and objs[0].key == key:
                 return True
         return False
@@ -165,8 +163,7 @@ class OutputData(base.OutputData):
         -------
         path : string
         """
-        return os.path.join(
-            *["s3://", self.bucket.name, self.get_bucket_key(tile)])
+        return os.path.join(*["s3://", self.bucket, self.get_bucket_key(tile)])
 
     def get_bucket_key(self, tile):
         """

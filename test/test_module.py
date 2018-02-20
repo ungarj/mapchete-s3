@@ -35,3 +35,9 @@ def test_write_output_data(example_mapchete, example_tile):
         data = mp.config.output.read(process_tile)
         assert isinstance(data, np.ndarray)
         assert not data[0].mask.all()
+
+
+def test_multiprocessing(example_mapchete, example_tile):
+    """Write and read output."""
+    with mapchete.open(example_mapchete) as mp:
+        next(mp.batch_processor(multi=2))
