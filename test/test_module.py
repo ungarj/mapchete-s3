@@ -37,6 +37,21 @@ def test_write_output_data(example_mapchete, example_tile):
         assert not data[0].mask.all()
 
 
+def test_overwrite(example_mapchete, example_tile):
+    """Write and read output."""
+    conf = dict(**example_mapchete)
+    with mapchete.open(conf, mode="overwrite") as mp:
+        process_tile = mp.config.process_pyramid.tile(*example_tile)
+        # write
+        mp.batch_process(tile=process_tile.id)
+        # write again, this time with an array of ones
+        mp.write(process_tile, np.ones((3, ) + process_tile.shape) * 100)
+        # read again, this time with data
+        data = mp.config.output.read(process_tile)
+        assert isinstance(data, np.ndarray)
+        assert np.where(data == 100, True, False).all()
+
+
 def test_multiprocessing(example_mapchete, example_tile):
     """Write and read output."""
     with mapchete.open(example_mapchete) as mp:

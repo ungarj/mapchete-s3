@@ -60,7 +60,6 @@ class OutputData(base.OutputData):
         """
         if self.tiles_exist(output_tile):
             logger.debug((output_tile.id, "read existing output"))
-            # TODO boto env
             with rasterio.open(self.get_path(output_tile), "r") as src:
                 return src.read(masked=True)
         else:
@@ -99,7 +98,7 @@ class OutputData(base.OutputData):
                 out_profile=self.profile(out_tile), out_tile=out_tile,
                 tags=tags
             ) as memfile:
-                logger.debug((tile.id, "upload tiles"))
+                logger.debug((tile.id, "upload tile"))
                 bucket.put_object(Key=self.get_bucket_key(tile), Body=memfile)
 
     def tiles_exist(self, process_tile):
