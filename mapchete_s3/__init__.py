@@ -24,6 +24,11 @@ METADATA = {
     "mode": "rw"
 }
 
+GDAL_OPTS = {
+    "GDAL_DISABLE_READDIR_ON_OPEN": True,
+    "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif,.ovr"
+}
+
 
 class OutputData(base.OutputData):
     """Driver output class."""
@@ -59,8 +64,9 @@ class OutputData(base.OutputData):
         process output : ``BufferedTile`` with appended data
         """
         if self.tiles_exist(output_tile):
-            logger.debug((output_tile.id, "read existing output"))
             with rasterio.open(self.get_path(output_tile), "r") as src:
+                logger.debug(
+                    "read existing output from %s", self.get_path(output_tile))
                 return src.read(masked=True)
         else:
             logger.debug((output_tile.id, "no existing output"))
@@ -98,7 +104,8 @@ class OutputData(base.OutputData):
                 out_profile=self.profile(out_tile), out_tile=out_tile,
                 tags=tags
             ) as memfile:
-                logger.debug((tile.id, "upload tile"))
+                logger.debug((
+                    tile.id, "upload tile", self.get_bucket_key(tile)))
                 bucket.put_object(Key=self.get_bucket_key(tile), Body=memfile)
 
     def tiles_exist(self, process_tile):

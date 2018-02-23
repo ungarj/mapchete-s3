@@ -21,7 +21,6 @@ def example_mapchete():
 def example_tile(example_mapchete):
     """Example tile for fixture."""
     zoom, row, col = (5, 15, 32)
-    _delete_tile(zoom, row, col, example_mapchete)
     yield (zoom, row, col)
     _delete_tile(zoom, row, col, example_mapchete)
 
