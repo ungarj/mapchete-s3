@@ -108,7 +108,7 @@ class OutputData(base.OutputData):
                     tile.id, "upload tile", self.get_bucket_key(tile)))
                 bucket.put_object(Key=self.get_bucket_key(tile), Body=memfile)
 
-    def tiles_exist(self, process_tile):
+    def tiles_exist(self, process_tile=None, output_tile=None):
         """
         Check whether output tiles of a process tile exist.
 
@@ -122,14 +122,22 @@ class OutputData(base.OutputData):
         exists : bool
         """
         bucket = boto3.resource('s3').Bucket(self.bucket)
-        for key in [
-            self.get_bucket_key(tile)
-            for tile in self.pyramid.intersecting(process_tile)
-        ]:
-            objs = list(bucket.objects.filter(Prefix=key))
-            if len(objs) > 0 and objs[0].key == key:
-                return True
-        return False
+        if process_tile and output_tile:
+            raise ValueError(
+                "just one of 'process_tile' and 'output_tile' allowed")
+        if process_tile:
+            for key in [
+                self.get_bucket_key(tile)
+                for tile in self.pyramid.intersecting(process_tile)
+            ]:
+                objs = list(bucket.objects.filter(Prefix=key))
+                if len(objs) > 0 and objs[0].key == key:
+                    return True
+            return False
+        if output_tile:
+            objs = list(bucket.objects.filter(
+                Prefix=self.get_bucket_key(output_tile)))
+            return len(objs) > 0 and objs[0].key == key
 
     def is_valid_with_config(self, config):
         """
