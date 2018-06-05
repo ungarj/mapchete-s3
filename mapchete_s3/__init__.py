@@ -125,6 +125,9 @@ class OutputData(base.OutputData):
             raise ValueError(
                 "just one of 'process_tile' and 'output_tile' allowed")
         bucket = boto3.resource('s3').Bucket(self.bucket)
+        if process_tile and output_tile:
+            raise ValueError(
+                "just one of 'process_tile' and 'output_tile' allowed")
         if process_tile:
             for key in [
                 self.get_bucket_key(tile)
