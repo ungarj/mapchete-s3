@@ -2,7 +2,8 @@
 """Test module."""
 
 import numpy as np
-# import numpy.ma as ma
+import numpy.ma as ma
+import time
 
 import mapchete
 from mapchete.formats import available_output_formats
@@ -30,8 +31,12 @@ def test_write_output_data(example_mapchete, example_tile):
     """Write and read output."""
     with mapchete.open(example_mapchete) as mp:
         process_tile = mp.config.process_pyramid.tile(*example_tile)
+        # check if tile exists
+        assert not mp.config.output.tiles_exist(process_tile)
         # write
         mp.batch_process(tile=process_tile.id)
+        # check if tile exists
+        assert mp.config.output.tiles_exist(process_tile)
         # read again, this time with data
         data = mp.config.output.read(process_tile)
         assert isinstance(data, np.ndarray)
@@ -44,24 +49,28 @@ def test_write_output_data(example_mapchete, example_tile):
 #     example_tile_id = tuple(example_tile)
 #     with mapchete.open(conf) as mp:
 #         process_tile = mp.config.process_pyramid.tile(*example_tile_id)
-#         # write
-#         mp.batch_process(tile=process_tile.id)
+#         shape = (3, ) + process_tile.shape
+#         # write unmasked ones
+#         mp.write(process_tile, ma.masked_array(np.ones(shape), np.zeros(shape)))
 #         data = mp.config.output.read(process_tile)
 #         assert isinstance(data, np.ndarray)
-#         assert not data[0].mask.all()
+#         assert not data.mask.any()
+
+#     # overwrite
 #     with mapchete.open(conf, mode="overwrite") as mp:
 #         process_tile = mp.config.process_pyramid.tile(*example_tile_id)
-#         # write again, this time with an array of ones
 #         shape = (3, ) + process_tile.shape
-#         mp.write(
-#             process_tile,
-#             ma.masked_array(np.ones(shape), np.zeros(shape)))
+#         # write unmasked twos
+#         mp.write(process_tile, ma.masked_array(np.ones(shape)*2, np.zeros(shape)))
+
+#     # read again, this time with overwritten data
 #     with mapchete.open(conf) as mp:
 #         process_tile = mp.config.process_pyramid.tile(*example_tile_id)
-#         # read again, this time with custom data
 #         data = mp.config.output.read(process_tile)
 #         assert isinstance(data, np.ndarray)
-#         assert np.where(data.data == 1, True, False).all()
+#         assert not data.mask.any()
+#         print(data)
+#         assert np.where(data.data == 2, True, False).all()
 
 
 def test_multiprocessing(example_mapchete, example_tile):

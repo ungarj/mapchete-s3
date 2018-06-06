@@ -125,23 +125,24 @@ class OutputData(base.OutputData):
             raise ValueError(
                 "just one of 'process_tile' and 'output_tile' allowed")
         bucket = boto3.resource('s3').Bucket(self.bucket)
+
+        def _any_key_exists(keys):
+            for key in keys:
+                for obj in bucket.objects.filter(Prefix=key):
+                    if obj.key == key:
+                        return True
+                return False
+
         if process_tile and output_tile:
             raise ValueError(
                 "just one of 'process_tile' and 'output_tile' allowed")
         if process_tile:
-            for key in [
+            return _any_key_exists([
                 self.get_bucket_key(tile)
                 for tile in self.pyramid.intersecting(process_tile)
-            ]:
-                objs = list(bucket.objects.filter(Prefix=key))
-                if len(objs) > 0 and objs[0].key == key:
-                    return True
-            return False
+            ])
         if output_tile:
-            key = self.get_bucket_key(output_tile)
-            objs = list(bucket.objects.filter(Prefix=key))
-            if len(objs) > 0 and objs[0].key == key:
-                return True
+            return _any_key_exists([self.get_bucket_key(output_tile)])
 
     def is_valid_with_config(self, config):
         """
