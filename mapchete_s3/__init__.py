@@ -39,7 +39,7 @@ class OutputData(base.OutputData):
         "mode": "rw"
     }
 
-    def __init__(self, output_params):
+    def __init__(self, output_params, **kwargs):
         """Initialize."""
         super(OutputData, self).__init__(output_params)
         self.output_params = output_params
