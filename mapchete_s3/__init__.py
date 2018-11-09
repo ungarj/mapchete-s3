@@ -237,7 +237,7 @@ class OutputData(base.OutputData):
         """
         out_profile = self.output_params["profile"]
         dst_metadata = dict(
-            gtiff.GTIFF_PROFILE,
+            gtiff.GTIFF_DEFAULT_PROFILE,
             count=out_profile["bands"],
             dtype=out_profile["dtype"],
             driver="GTiff")
